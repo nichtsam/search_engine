@@ -5,6 +5,71 @@ use std::{
     path::Path,
 };
 
+#[derive(Debug)]
+struct Lexer<'a> {
+    content: &'a [char],
+}
+
+impl<'a> Lexer<'a> {
+    fn new(content: &'a [char]) -> Self {
+        Self { content }
+    }
+
+    fn trim_left(&mut self) {
+        while self.content.len() > 0 && self.content[0].is_whitespace() {
+            self.content = &self.content[1..];
+        }
+    }
+
+    fn next_token(&mut self) -> Option<&'a [char]> {
+        self.trim_left();
+
+        // reach end
+        if self.content.len() == 0 {
+            return None;
+        }
+
+        // token starts with number
+        if self.content[0].is_numeric() {
+            let mut n = 0;
+            while n < self.content.len() && self.content[n].is_numeric() {
+                n += 1;
+            }
+
+            let token = &self.content[..n];
+            self.content = &self.content[n..];
+
+            return Some(token);
+        }
+        // token starts with alphabet
+        if self.content[0].is_alphabetic() {
+            let mut n = 0;
+            while n < self.content.len() && self.content[n].is_alphanumeric() {
+                n += 1;
+            }
+
+            let token = &self.content[..n];
+            self.content = &self.content[n..];
+
+            return Some(token);
+        }
+
+        // token starts with symbols
+        let token = &self.content[..1];
+        self.content = &self.content[1..];
+
+        Some(token)
+    }
+}
+
+impl<'a> Iterator for Lexer<'a> {
+    type Item = &'a [char];
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next_token()
+    }
+}
+
 fn main() -> io::Result<()> {
     let dir_path = "path/to/folder/";
     let dir = read_dir(dir_path)?;
