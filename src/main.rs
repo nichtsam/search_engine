@@ -77,7 +77,10 @@ fn main() -> io::Result<()> {
     for file in dir {
         let file_path = file?.path();
         let text = extract_text_from_html_file(&file_path)?;
-        let chars = &text.chars().collect::<Vec<_>>();
+        let chars = &text
+            .chars()
+            .map(|c| c.to_ascii_uppercase())
+            .collect::<Vec<_>>();
 
         let lexer = Lexer::new(&chars);
         for token in lexer {
