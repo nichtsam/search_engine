@@ -76,9 +76,13 @@ fn main() -> io::Result<()> {
 
     for file in dir {
         let file_path = file?.path();
-        let text = extract_text_from_html_file(&file_path).unwrap();
+        let text = extract_text_from_html_file(&file_path)?;
+        let chars = &text.chars().collect::<Vec<_>>();
 
-        println!("{file_path:?} {size}", size = text.len());
+        let lexer = Lexer::new(&chars);
+        for token in lexer {
+            println!("{}", token.iter().collect::<String>());
+        }
     }
 
     Ok(())
