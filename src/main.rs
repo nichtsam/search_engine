@@ -127,13 +127,6 @@ fn extract_text_from_html(html: &str) -> String {
         .next()
         .unwrap()
         .text()
-        .filter_map(|t| {
-            let t = t.trim();
-            if t.is_empty() {
-                return None;
-            };
-            Some(t)
-        })
         .collect::<Vec<_>>()
         .join(" ")
 }
