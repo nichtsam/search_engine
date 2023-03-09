@@ -1,8 +1,9 @@
 use scraper::{Html, Selector};
 use std::{
-    fs::{self, read_dir},
+    collections::HashMap,
+    fs::{self, read_dir, File},
     io,
-    path::Path,
+    path::{Path, PathBuf},
 };
 
 #[derive(Debug)]
@@ -72,23 +73,38 @@ impl<'a> Iterator for Lexer<'a> {
     }
 }
 
+type TermFrequency = HashMap<String, usize>;
+type TermFrequencyIndex = HashMap<PathBuf, TermFrequency>;
+
 fn main() -> io::Result<()> {
     let dir_path = "path/to/folder/";
     let dir = read_dir(dir_path)?;
 
+    let mut term_frequency_index = TermFrequencyIndex::new();
+
     for file in dir {
         let file_path = file?.path();
+        println!("indexing {file_path:?}...");
+
         let text = extract_text_from_html_file(&file_path)?;
         let chars = &text
             .chars()
             .map(|c| c.to_ascii_uppercase())
             .collect::<Vec<_>>();
 
-        let lexer = Lexer::new(&chars);
-        for token in lexer {
-            println!("{}", token.iter().collect::<String>());
+        let mut term_frequency: TermFrequency = HashMap::new();
+
+        for token in Lexer::new(&chars) {
+            let term = token.iter().collect::<String>();
+            let count = term_frequency.entry(term).or_insert(0);
+            *count += 1;
         }
+
+        term_frequency_index.insert(file_path, term_frequency);
     }
+
+    let buffer = File::create("term_frequency_index.json")?;
+    serde_json::to_writer(buffer, &term_frequency_index)?;
 
     Ok(())
 }

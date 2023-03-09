@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 scraper = "0.15.0"
+serde_json = "1.0.94"
