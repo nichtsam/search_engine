@@ -77,7 +77,13 @@ type TermFrequency = HashMap<String, usize>;
 type TermFrequencyIndex = HashMap<PathBuf, TermFrequency>;
 
 fn main() -> io::Result<()> {
-    let dir_path = "path/to/folder/";
+    let dir_path = "three.js/docs/api/en/materials/";
+    index_dir(dir_path)?;
+
+    Ok(())
+}
+
+fn index_dir(dir_path: impl AsRef<Path>) -> io::Result<()> {
     let dir = read_dir(dir_path)?;
 
     let mut term_frequency_index = TermFrequencyIndex::new();
@@ -103,8 +109,10 @@ fn main() -> io::Result<()> {
         term_frequency_index.insert(file_path, term_frequency);
     }
 
-    let buffer = File::create("term_frequency_index.json")?;
-    serde_json::to_writer(buffer, &term_frequency_index)?;
+    serde_json::to_writer(
+        File::create("term_frequency_index.json")?,
+        &term_frequency_index,
+    )?;
 
     Ok(())
 }
