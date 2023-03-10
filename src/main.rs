@@ -1,3 +1,4 @@
+use clap::{CommandFactory, Parser, Subcommand};
 use scraper::{Html, Selector};
 use std::{
     collections::HashMap,
@@ -76,11 +77,29 @@ impl<'a> Iterator for Lexer<'a> {
 type TermFrequency = HashMap<String, usize>;
 type TermFrequencyIndex = HashMap<PathBuf, TermFrequency>;
 
-fn main() -> io::Result<()> {
-    let dir_path = "three.js/docs/api/en/materials/";
-    index_dir(dir_path)?;
+#[derive(Parser, Debug)]
+#[command(version, about)]
+struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+}
 
-    Ok(())
+#[derive(Subcommand, Debug)]
+enum Commands {
+    Index { dir_path: String },
+}
+
+fn main() {
+    let cli = Cli::parse();
+
+    match &cli.command {
+        Commands::Index { dir_path } => {
+            if let Err(err) = index_dir(dir_path) {
+                let mut cmd = Cli::command();
+                cmd.error(clap::error::ErrorKind::Io, err).exit();
+            };
+        }
+    }
 }
 
 fn index_dir(dir_path: impl AsRef<Path>) -> io::Result<()> {

@@ -2,9 +2,11 @@
 name = "search-engine"
 version = "0.1.0"
 edition = "2021"
+description = "Local search engine written in rust"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+clap = { version = "4.1.8", features = ["derive"] }
 scraper = "0.15.0"
 serde_json = "1.0.94"
