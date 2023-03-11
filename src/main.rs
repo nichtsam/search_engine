@@ -137,10 +137,16 @@ fn index_dir(dir_path: impl AsRef<Path>) -> io::Result<()> {
         }
     }
 
-    serde_json::to_writer(
-        File::create("term_frequency_index.json")?,
-        &term_frequency_index,
-    )?;
+    save_index(&term_frequency_index, "term_frequency_index.json")?;
+
+    Ok(())
+}
+
+fn save_index(
+    term_frequency_index: &TermFrequencyIndex,
+    index_path: impl AsRef<Path>,
+) -> io::Result<()> {
+    serde_json::to_writer(File::create(index_path)?, &term_frequency_index)?;
 
     Ok(())
 }
