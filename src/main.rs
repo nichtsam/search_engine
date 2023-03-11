@@ -212,7 +212,8 @@ fn extract_text_from_html(html: &str) -> Option<String> {
     let document = Html::parse_document(html);
 
     // select all text nodes
-    let selector = Selector::parse("body, head :not(script)").ok()?;
+    let selector =
+        Selector::parse("body :not(script):not(style), head :not(script):not(style)").ok()?;
 
     Some(
         document
