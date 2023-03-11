@@ -111,7 +111,14 @@ fn index_dir(
     let dir = read_dir(dir_path)?;
 
     'next_file: for entry in dir {
-        let path = entry?.path();
+        let path = match entry {
+            Ok(entry) => entry.path(),
+            Err(err) => {
+                eprintln!("ERROR: {err}");
+                continue 'next_file;
+            }
+        };
+
         println!("indexing {path:?}...");
 
         match path.extension().map(|os_str| os_str.to_str()).flatten() {
