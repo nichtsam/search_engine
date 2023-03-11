@@ -111,28 +111,30 @@ fn index_dir(dir_path: impl AsRef<Path>) -> io::Result<()> {
         let path = entry?.path();
         println!("indexing {path:?}...");
 
-        let text = match extract_text_from_html_file(&path) {
-            Some(v) => v,
+        match path.extension().map(|os_str| os_str.to_str()).flatten() {
+            Some(extension) => match extension {
+                "html" => {
+                    let text = match extract_text_from_html_file(&path) {
+                        Some(v) => v,
+                        None => {
+                            eprintln!("ERROR: could not extract text from path: {path:?}");
+                            continue 'next_file;
+                        }
+                    };
+
+                    let term_frequency = index_text(&text);
+                    term_frequency_index.insert(path, term_frequency);
+                }
+                other => {
+                    eprintln!("ERROR: extension \"{other}\" is not supported");
+                    continue 'next_file;
+                }
+            },
             None => {
-                eprintln!("ERROR: could not extract text from path: {path:?}");
+                eprintln!("ERROR: recursive indexing is not supported");
                 continue 'next_file;
             }
-        };
-
-        let chars = &text
-            .chars()
-            .map(|c| c.to_ascii_uppercase())
-            .collect::<Vec<_>>();
-
-        let mut term_frequency: TermFrequency = HashMap::new();
-
-        for token in Lexer::new(&chars) {
-            let term = token.iter().collect::<String>();
-            let count = term_frequency.entry(term).or_insert(0);
-            *count += 1;
         }
-
-        term_frequency_index.insert(path, term_frequency);
     }
 
     serde_json::to_writer(
@@ -141,6 +143,23 @@ fn index_dir(dir_path: impl AsRef<Path>) -> io::Result<()> {
     )?;
 
     Ok(())
+}
+
+fn index_text(text: &str) -> TermFrequency {
+    let chars = &text
+        .chars()
+        .map(|c| c.to_ascii_uppercase())
+        .collect::<Vec<_>>();
+
+    let mut term_frequency: TermFrequency = HashMap::new();
+
+    for token in Lexer::new(&chars) {
+        let term = token.iter().collect::<String>();
+        let count = term_frequency.entry(term).or_insert(0);
+        *count += 1;
+    }
+
+    term_frequency
 }
 
 fn extract_text_from_html_file(file_path: impl AsRef<Path>) -> Option<String> {
