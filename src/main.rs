@@ -107,11 +107,18 @@ fn index_dir(dir_path: impl AsRef<Path>) -> io::Result<()> {
 
     let mut term_frequency_index = TermFrequencyIndex::new();
 
-    for file in dir {
-        let file_path = file?.path();
-        println!("indexing {file_path:?}...");
+    'next_file: for entry in dir {
+        let path = entry?.path();
+        println!("indexing {path:?}...");
 
-        let text = extract_text_from_html_file(&file_path)?;
+        let text = match extract_text_from_html_file(&path) {
+            Some(v) => v,
+            None => {
+                eprintln!("ERROR: could not extract text from path: {path:?}");
+                continue 'next_file;
+            }
+        };
+
         let chars = &text
             .chars()
             .map(|c| c.to_ascii_uppercase())
@@ -125,7 +132,7 @@ fn index_dir(dir_path: impl AsRef<Path>) -> io::Result<()> {
             *count += 1;
         }
 
-        term_frequency_index.insert(file_path, term_frequency);
+        term_frequency_index.insert(path, term_frequency);
     }
 
     serde_json::to_writer(
@@ -136,24 +143,26 @@ fn index_dir(dir_path: impl AsRef<Path>) -> io::Result<()> {
     Ok(())
 }
 
-fn extract_text_from_html_file(file_path: impl AsRef<Path>) -> io::Result<String> {
-    let content = fs::read_to_string(file_path)?;
-    Ok(extract_text_from_html(&content))
+fn extract_text_from_html_file(file_path: impl AsRef<Path>) -> Option<String> {
+    let content = fs::read_to_string(file_path).ok()?;
+    extract_text_from_html(&content)
 }
 
-fn extract_text_from_html(html: &str) -> String {
+fn extract_text_from_html(html: &str) -> Option<String> {
     // parse the HTML
     // let html = r#"<html><title>This is The Title</title><script>this should not be included</script></html>"#;
     let document = Html::parse_document(html);
 
     // select all text nodes
-    let selector = Selector::parse("html").unwrap();
+    let selector = Selector::parse("html").ok()?;
 
-    document
-        .select(&selector)
-        .next()
-        .unwrap()
-        .text()
-        .collect::<Vec<_>>()
-        .join(" ")
+    Some(
+        document
+            .select(&selector)
+            .next()
+            .unwrap()
+            .text()
+            .collect::<Vec<_>>()
+            .join(" "),
+    )
 }
