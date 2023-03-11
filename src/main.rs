@@ -121,6 +121,14 @@ fn index_dir(
 
         println!("indexing {path:?}...");
 
+        if path.is_dir() {
+            if let Err(err) = index_dir(path, term_frequency_index) {
+                eprintln!("ERROR: {err}");
+            }
+
+            continue 'next_file;
+        }
+
         match path.extension().map(|os_str| os_str.to_str()).flatten() {
             Some(extension) => match extension {
                 "html" => {
