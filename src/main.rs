@@ -87,6 +87,7 @@ struct Cli {
 #[derive(Subcommand, Debug)]
 enum Commands {
     Index { dir_path: String },
+    Search,
 }
 
 fn main() {
@@ -100,6 +101,20 @@ fn main() {
                 let mut cmd = Cli::command();
                 cmd.error(clap::error::ErrorKind::Io, err).exit();
             };
+        }
+        Commands::Search => {
+            let index_file = File::open("term_frequency_index.json").unwrap_or_else(|err| {
+                let mut cmd = Cli::command();
+                cmd.error(clap::error::ErrorKind::Io, err).exit();
+            });
+
+            let term_frequency_index: TermFrequencyIndex = serde_json::from_reader(index_file)
+                .unwrap_or_else(|err| {
+                    let mut cmd = Cli::command();
+                    cmd.error(clap::error::ErrorKind::Io, err).exit();
+                });
+
+            println!("index contains {} files", term_frequency_index.len());
         }
     }
 }
