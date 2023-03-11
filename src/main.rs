@@ -212,14 +212,13 @@ fn extract_text_from_html(html: &str) -> Option<String> {
     let document = Html::parse_document(html);
 
     // select all text nodes
-    let selector = Selector::parse("html").ok()?;
+    let selector = Selector::parse("body, head :not(script)").ok()?;
 
     Some(
         document
             .select(&selector)
-            .next()
-            .unwrap()
-            .text()
+            .map(|tag| tag.text())
+            .flatten()
             .collect::<Vec<_>>()
             .join(" "),
     )
