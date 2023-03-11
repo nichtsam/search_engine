@@ -86,7 +86,9 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
+    #[command(about = "index the specified path recursively")]
     Index { dir_path: String },
+    #[command(about = "currently only check how many files is indexed")]
     Search,
 }
 
