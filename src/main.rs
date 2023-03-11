@@ -94,7 +94,9 @@ fn main() {
 
     match &cli.command {
         Commands::Index { dir_path } => {
-            if let Err(err) = index_dir(dir_path) {
+            let mut term_frequency_index = TermFrequencyIndex::new();
+
+            if let Err(err) = index_dir(dir_path, &mut term_frequency_index) {
                 let mut cmd = Cli::command();
                 cmd.error(clap::error::ErrorKind::Io, err).exit();
             };
@@ -102,10 +104,11 @@ fn main() {
     }
 }
 
-fn index_dir(dir_path: impl AsRef<Path>) -> io::Result<()> {
+fn index_dir(
+    dir_path: impl AsRef<Path>,
+    term_frequency_index: &mut TermFrequencyIndex,
+) -> io::Result<()> {
     let dir = read_dir(dir_path)?;
-
-    let mut term_frequency_index = TermFrequencyIndex::new();
 
     'next_file: for entry in dir {
         let path = entry?.path();
