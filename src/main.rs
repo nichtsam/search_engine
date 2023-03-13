@@ -91,25 +91,36 @@ struct Cli {
 #[derive(Subcommand, Debug)]
 enum Commands {
     #[command(about = "index the specified path recursively")]
-    Index { dir_path: String },
+    Index {
+        dir_path: String,
+        index_path: String,
+    },
     #[command(about = "currently only check how many files is indexed")]
-    Search,
+    Search { index_path: String },
 }
 
 fn main() {
     let cli = Cli::parse();
 
     match &cli.command {
-        Commands::Index { dir_path } => {
+        Commands::Index {
+            dir_path,
+            index_path,
+        } => {
             let mut term_frequency_index = TermFrequencyIndex::new();
 
             if let Err(err) = index_dir(dir_path, &mut term_frequency_index) {
                 let mut cmd = Cli::command();
                 cmd.error(clap::error::ErrorKind::Io, err).exit();
             };
+
+            if let Err(err) = save_index(&term_frequency_index, index_path) {
+                eprintln!("ERROR: could not save index to path {index_path}: {err}");
+            }
         }
-        Commands::Search => {
-            let index_file = File::open("term_frequency_index.json").unwrap_or_else(|err| {
+
+        Commands::Search { index_path } => {
+            let index_file = File::open(index_path).unwrap_or_else(|err| {
                 let mut cmd = Cli::command();
                 cmd.error(clap::error::ErrorKind::Io, err).exit();
             });
@@ -175,8 +186,6 @@ fn index_dir(
             }
         }
     }
-
-    save_index(&term_frequency_index, "term_frequency_index.json")?;
 
     Ok(())
 }
