@@ -10,7 +10,7 @@
 
 | Shorthand | Meaning                             | Description                                                                                                                                        |
 | --------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| tf        | Term Frequency                      |                                                                                                                                                    |
-| idf       | Inverse Document Frequency          |                                                                                                                                                    |
-| dtf       | Document Terms Frequencies          | The HashMap that stores the frequencies of terms that occur in the document, with the term itself as the key and the frequency count as the value. |
-| dtf_index | Index of Document Terms Frequencies | The HashMap that stores Document Terms Frequencies with the file path as key.                                                                      |
+| `tf`        | Term Frequency                      |                                                                                                                                                    |
+| `idf`       | Inverse Document Frequency          |                                                                                                                                                    |
+| `dtf`       | Document Terms Frequencies          | The HashMap that stores the frequencies of terms that occur in the document, with the term itself as the key and the frequency count as the value. |
+| `dtf_index` | Index of Document Terms Frequencies | The HashMap that stores Document Terms Frequencies with the file path as key.                                                                      |
