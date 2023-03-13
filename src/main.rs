@@ -78,8 +78,8 @@ impl<'a> Iterator for Lexer<'a> {
     }
 }
 
-type TermFrequency = HashMap<String, usize>;
-type TermFrequencyIndex = HashMap<PathBuf, TermFrequency>;
+type DocumentTermsFrequencies = HashMap<String, usize>;
+type DocumentTermsFrequenciesIndex = HashMap<PathBuf, DocumentTermsFrequencies>;
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
@@ -92,11 +92,16 @@ struct Cli {
 enum Commands {
     #[command(about = "index the specified path recursively")]
     Index {
-        dir_path: String,
-        index_path: String,
+        #[arg(help = "the directory of the collections you want to index.")]
+        input_dir: String,
+        #[arg(help = "the path to output the index result for further usage.")]
+        output_path: String,
     },
     #[command(about = "currently only check how many files is indexed")]
-    Search { index_path: String },
+    Search {
+        #[arg(help = "the path of the document terms frequencies index.")]
+        dtf_index_path: String,
+    },
 }
 
 fn main() {
@@ -104,41 +109,41 @@ fn main() {
 
     match &cli.command {
         Commands::Index {
-            dir_path,
-            index_path,
+            input_dir,
+            output_path,
         } => {
-            let mut term_frequency_index = TermFrequencyIndex::new();
+            let mut dtf_index = DocumentTermsFrequenciesIndex::new();
 
-            if let Err(err) = index_dir(dir_path, &mut term_frequency_index) {
+            if let Err(err) = index_dir(input_dir, &mut dtf_index) {
                 let mut cmd = Cli::command();
                 cmd.error(clap::error::ErrorKind::Io, err).exit();
             };
 
-            if let Err(err) = save_index(&term_frequency_index, index_path) {
-                eprintln!("ERROR: could not save index to path {index_path}: {err}");
+            if let Err(err) = save_index(&dtf_index, output_path) {
+                eprintln!("ERROR: could not save index to path {output_path}: {err}");
             }
         }
 
-        Commands::Search { index_path } => {
-            let index_file = File::open(index_path).unwrap_or_else(|err| {
+        Commands::Search { dtf_index_path } => {
+            let dtf_index_file = File::open(dtf_index_path).unwrap_or_else(|err| {
                 let mut cmd = Cli::command();
                 cmd.error(clap::error::ErrorKind::Io, err).exit();
             });
 
-            let term_frequency_index: TermFrequencyIndex = serde_json::from_reader(index_file)
+            let dtf_index: DocumentTermsFrequenciesIndex = serde_json::from_reader(dtf_index_file)
                 .unwrap_or_else(|err| {
                     let mut cmd = Cli::command();
                     cmd.error(clap::error::ErrorKind::Io, err).exit();
                 });
 
-            println!("index contains {} files", term_frequency_index.len());
+            println!("dtf_index contains {} files", dtf_index.len());
         }
     }
 }
 
 fn index_dir(
     dir_path: impl AsRef<Path>,
-    term_frequency_index: &mut TermFrequencyIndex,
+    dtf_index: &mut DocumentTermsFrequenciesIndex,
 ) -> io::Result<()> {
     let dir = read_dir(dir_path)?;
 
@@ -154,7 +159,7 @@ fn index_dir(
         println!("indexing {path:?}...");
 
         if path.is_dir() {
-            if let Err(err) = index_dir(path, term_frequency_index) {
+            if let Err(err) = index_dir(path, dtf_index) {
                 eprintln!("ERROR: {err}");
             }
 
@@ -172,8 +177,8 @@ fn index_dir(
                         }
                     };
 
-                    let term_frequency = index_text(&text);
-                    term_frequency_index.insert(path, term_frequency);
+                    let dtf = index_text(&text);
+                    dtf_index.insert(path, dtf);
                 }
                 other => {
                     eprintln!("ERROR: extension \"{other}\" is not supported");
@@ -191,25 +196,25 @@ fn index_dir(
 }
 
 fn save_index(
-    term_frequency_index: &TermFrequencyIndex,
-    index_path: impl AsRef<Path>,
+    dtf_index: &DocumentTermsFrequenciesIndex,
+    output_path: impl AsRef<Path>,
 ) -> io::Result<()> {
-    serde_json::to_writer(File::create(index_path)?, &term_frequency_index)?;
+    serde_json::to_writer(File::create(output_path)?, &dtf_index)?;
 
     Ok(())
 }
 
-fn index_text(text: &str) -> TermFrequency {
+fn index_text(text: &str) -> DocumentTermsFrequencies {
     let chars = &text.chars().collect::<Vec<_>>();
 
-    let mut term_frequency: TermFrequency = HashMap::new();
+    let mut dtf: DocumentTermsFrequencies = HashMap::new();
 
     for token in Lexer::new(&chars) {
-        let count = term_frequency.entry(token).or_insert(0);
+        let count = dtf.entry(token).or_insert(0);
         *count += 1;
     }
 
-    term_frequency
+    dtf
 }
 
 fn extract_text_from_html_file(file_path: impl AsRef<Path>) -> Option<String> {
