@@ -41,7 +41,7 @@ impl<'a> Lexer<'a> {
         self.chop(n)
     }
 
-    fn next_token(&mut self) -> Option<&'a [char]> {
+    fn next_token(&mut self) -> Option<String> {
         self.trim_left();
 
         // reach end
@@ -51,23 +51,27 @@ impl<'a> Lexer<'a> {
 
         // token starts with number
         if self.content[0].is_numeric() {
-            let token = self.chop_while(|c| c.is_numeric());
+            let token = self.chop_while(|c| c.is_numeric()).iter().collect();
             return Some(token);
         }
         // token starts with alphabet
         if self.content[0].is_alphabetic() {
-            let token = self.chop_while(|c| c.is_alphanumeric());
+            let token = self
+                .chop_while(|c| c.is_alphanumeric())
+                .iter()
+                .map(|c| c.to_ascii_uppercase())
+                .collect();
             return Some(token);
         }
 
         // token starts with symbols
-        let token = self.chop(1);
+        let token = self.chop(1).iter().collect();
         Some(token)
     }
 }
 
 impl<'a> Iterator for Lexer<'a> {
-    type Item = &'a [char];
+    type Item = String;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.next_token()
@@ -187,16 +191,12 @@ fn save_index(
 }
 
 fn index_text(text: &str) -> TermFrequency {
-    let chars = &text
-        .chars()
-        .map(|c| c.to_ascii_uppercase())
-        .collect::<Vec<_>>();
+    let chars = &text.chars().collect::<Vec<_>>();
 
     let mut term_frequency: TermFrequency = HashMap::new();
 
     for token in Lexer::new(&chars) {
-        let term = token.iter().collect::<String>();
-        let count = term_frequency.entry(term).or_insert(0);
+        let count = term_frequency.entry(token).or_insert(0);
         *count += 1;
     }
 
