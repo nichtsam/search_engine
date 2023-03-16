@@ -1,6 +1,7 @@
 use clap::{CommandFactory, Parser, Subcommand};
 use scraper::{Html, Selector};
 use std::{
+    cmp::Ordering,
     collections::HashMap,
     fs::{self, read_dir, File},
     io,
@@ -97,9 +98,11 @@ enum Commands {
         #[arg(help = "the path to output the index result for further usage.")]
         output_path: String,
     },
-    #[command(about = "currently only check how many files is indexed")]
+    #[command(about = "lists out top 10 most relevant document")]
     Search {
-        #[arg(help = "the path of the document terms frequencies index.")]
+        #[arg(help = "the word or phrase that you’d like to rank for.")]
+        keyword_phrase: String,
+        #[arg(help = "the path of the document terms frequencies index to search the term in.")]
         dtf_index_path: String,
     },
 }
@@ -124,7 +127,10 @@ fn main() {
             }
         }
 
-        Commands::Search { dtf_index_path } => {
+        Commands::Search {
+            keyword_phrase,
+            dtf_index_path,
+        } => {
             let dtf_index_file = File::open(dtf_index_path).unwrap_or_else(|err| {
                 let mut cmd = Cli::command();
                 cmd.error(clap::error::ErrorKind::Io, err).exit();
@@ -136,9 +142,58 @@ fn main() {
                     cmd.error(clap::error::ErrorKind::Io, err).exit();
                 });
 
-            println!("dtf_index contains {} files", dtf_index.len());
+            search(keyword_phrase, &dtf_index);
         }
     }
+}
+
+fn search(keyword_phrase: &str, dtf_index: &DocumentTermsFrequenciesIndex) {
+    let keyword_phrase = &keyword_phrase.chars().collect::<Vec<_>>();
+    let mut result = Vec::new();
+    for (path, dtf) in dtf_index {
+        let lexer = Lexer::new(keyword_phrase);
+        let mut rank_score = 0.0;
+
+        for token in lexer {
+            rank_score += compute_tf(&token, dtf) * compute_idf(&token, dtf_index);
+        }
+
+        result.push((path, rank_score));
+    }
+
+    result.sort_by(|(_, rank_score_a), (_, rank_score_b)| {
+        rank_score_a
+            .partial_cmp(rank_score_b)
+            .unwrap_or(Ordering::Equal)
+    });
+    result.reverse();
+
+    for (index, (path, rank_score)) in result.iter().enumerate().take(10) {
+        println!(
+            "{no}. {path} => {rank_score}",
+            no = index + 1,
+            path = path.display()
+        );
+    }
+}
+
+fn compute_tf(term: &str, dtf: &DocumentTermsFrequencies) -> f32 {
+    let total = dtf.len();
+    let frequency = *dtf.get(term).unwrap_or(&0);
+
+    frequency as f32 / total as f32
+}
+
+fn compute_idf(term: &str, dtf_index: &DocumentTermsFrequenciesIndex) -> f32 {
+    let total_doc_counts = dtf_index.len();
+    let mut total_doc_occurence = 0;
+    for (_, dtf) in dtf_index {
+        if let Some(_) = dtf.get(term) {
+            total_doc_occurence += 1;
+        }
+    }
+
+    (total_doc_counts as f32 / (1.0 + total_doc_occurence as f32)).log10()
 }
 
 fn index_dir(
