@@ -178,22 +178,27 @@ fn search(keyword_phrase: &str, dtf_index: &DocumentTermsFrequenciesIndex) {
 }
 
 fn compute_tf(term: &str, dtf: &DocumentTermsFrequencies) -> f32 {
-    let total = dtf.len();
-    let frequency = *dtf.get(term).unwrap_or(&0);
+    // where
+    // s => sum of terms
+    // t => frequency of term
+    let s = dtf.iter().map(|(_, f)| *f).sum::<usize>();
+    let t = *dtf.get(term).unwrap_or(&0);
 
-    frequency as f32 / total as f32
+    t as f32 / s as f32
 }
 
 fn compute_idf(term: &str, dtf_index: &DocumentTermsFrequenciesIndex) -> f32 {
-    let total_doc_counts = dtf_index.len();
-    let mut total_doc_occurence = 0;
-    for (_, dtf) in dtf_index {
-        if let Some(_) = dtf.get(term) {
-            total_doc_occurence += 1;
-        }
-    }
+    // where
+    // n => total number of documents in the corpus
+    // d => number of documents where the term appears
+    let n = dtf_index.len();
+    let d = dtf_index
+        .iter()
+        .filter(|(_, dtf)| dtf.contains_key(term))
+        .collect::<Vec<_>>()
+        .len();
 
-    (total_doc_counts as f32 / (1.0 + total_doc_occurence as f32)).log10()
+    (n as f32 / (1 + d) as f32).log10()
 }
 
 fn index_dir(
