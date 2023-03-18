@@ -19,7 +19,7 @@ impl<'a> Lexer<'a> {
     }
 
     fn trim_left(&mut self) {
-        while self.content.len() > 0 && self.content[0].is_whitespace() {
+        while !self.content.is_empty() && self.content[0].is_whitespace() {
             self.content = &self.content[1..];
         }
     }
@@ -46,7 +46,7 @@ impl<'a> Lexer<'a> {
         self.trim_left();
 
         // reach end
-        if self.content.len() == 0 {
+        if self.content.is_empty() {
             return None;
         }
 
@@ -204,8 +204,7 @@ fn compute_idf(term: &str, dtf_index: &DocumentTermsFrequenciesIndex) -> f32 {
     let d = dtf_index
         .iter()
         .filter(|(_, dtf)| dtf.contains_key(term))
-        .collect::<Vec<_>>()
-        .len();
+        .count();
 
     (n as f32 / (1 + d) as f32).log10()
 }
@@ -235,7 +234,7 @@ fn index_dir(
             continue 'next_file;
         }
 
-        match path.extension().map(|os_str| os_str.to_str()).flatten() {
+        match path.extension().and_then(|os_str| os_str.to_str()) {
             Some(extension) => match extension {
                 "html" => {
                     let text = match extract_text_from_html_file(&path) {
@@ -278,7 +277,7 @@ fn index_text(text: &str) -> DocumentTermsFrequencies {
 
     let mut dtf: DocumentTermsFrequencies = HashMap::new();
 
-    for token in Lexer::new(&chars) {
+    for token in Lexer::new(chars) {
         let count = dtf.entry(token).or_insert(0);
         *count += 1;
     }
@@ -303,8 +302,7 @@ fn extract_text_from_html(html: &str) -> Option<String> {
     Some(
         document
             .select(&selector)
-            .map(|tag| tag.text())
-            .flatten()
+            .flat_map(|tag| tag.text())
             .collect::<Vec<_>>()
             .join(" "),
     )
