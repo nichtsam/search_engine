@@ -267,8 +267,7 @@ fn save_index(
     dtf_index: &DocumentTermsFrequenciesIndex,
     output_path: impl AsRef<Path>,
 ) -> io::Result<()> {
-    serde_json::to_writer(File::create(output_path)?, &dtf_index)?;
-
+    serde_json::to_writer(BufWriter::new(File::create(output_path)?), &dtf_index)?;
     Ok(())
 }
 
