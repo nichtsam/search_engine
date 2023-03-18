@@ -148,6 +148,21 @@ fn main() {
 }
 
 fn search(keyword_phrase: &str, dtf_index: &DocumentTermsFrequenciesIndex) {
+    let result = compute_search(keyword_phrase, dtf_index);
+
+    for (index, (path, rank_score)) in result.iter().enumerate().take(10) {
+        println!(
+            "{no}. {path} => {rank_score}",
+            no = index + 1,
+            path = path.display()
+        );
+    }
+}
+
+fn compute_search<'a>(
+    keyword_phrase: &str,
+    dtf_index: &'a DocumentTermsFrequenciesIndex,
+) -> Vec<(&'a PathBuf, f32)> {
     let keyword_phrase = &keyword_phrase.chars().collect::<Vec<_>>();
     let mut result = Vec::new();
     for (path, dtf) in dtf_index {
@@ -168,13 +183,7 @@ fn search(keyword_phrase: &str, dtf_index: &DocumentTermsFrequenciesIndex) {
     });
     result.reverse();
 
-    for (index, (path, rank_score)) in result.iter().enumerate().take(10) {
-        println!(
-            "{no}. {path} => {rank_score}",
-            no = index + 1,
-            path = path.display()
-        );
-    }
+    result
 }
 
 fn compute_tf(term: &str, dtf: &DocumentTermsFrequencies) -> f32 {
