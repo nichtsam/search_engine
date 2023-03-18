@@ -206,7 +206,7 @@ fn compute_idf(term: &str, dtf_index: &DocumentTermsFrequenciesIndex) -> f32 {
         .filter(|(_, dtf)| dtf.contains_key(term))
         .count();
 
-    (n as f32 / (1 + d) as f32).log10()
+    ((1 + n) as f32 / (1 + d) as f32).log10()
 }
 
 fn index_dir(
