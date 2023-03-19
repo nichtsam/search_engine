@@ -18,6 +18,7 @@
 
 ## TODO
 
-- Improve searching(tf-idf computation), currently O(m*n^2), could be O(m*n), where m is the keyword phrase and n is the index size.
+- Improve searching(tf-idf computation),  
+  currently O(m*n^2), could be O(m*n), where m is the keyword phrase and n is the index size.
 - Stemming
 - Web interface
