@@ -15,3 +15,9 @@
 | `idf`       | Inverse Document Frequency          |                                                                                                                                                    |
 | `dtf`       | Document Terms Frequencies          | The HashMap that stores the frequencies of terms that occur in the document, with the term itself as the key and the frequency count as the value. |
 | `dtf_index` | Index of Document Terms Frequencies | The HashMap that stores Document Terms Frequencies with the file path as key.                                                                      |
+
+## TODO
+
+- Improve searching(tf-idf computation), currently O(m*n^2), could be O(m*n), where m is the keyword phrase and n is the index size.
+- Stemming
+- Web interface
