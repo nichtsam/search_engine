@@ -9,8 +9,8 @@
 
 ## Abbreviations and Shorthands
 
-| Shorthand | Meaning                             | Description                                                                                                                                        |
-| --------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shorthand   | Meaning                             | Description                                                                                                                                        |
+| ----------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `tf`        | Term Frequency                      |                                                                                                                                                    |
 | `idf`       | Inverse Document Frequency          |                                                                                                                                                    |
 | `dtf`       | Document Terms Frequencies          | The HashMap that stores the frequencies of terms that occur in the document, with the term itself as the key and the frequency count as the value. |
