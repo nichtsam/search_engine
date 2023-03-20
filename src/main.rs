@@ -4,6 +4,7 @@ use search_engine::{
     Model,
 };
 use std::time::SystemTime;
+use tiny_http::{Response, Server, StatusCode};
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
@@ -27,6 +28,13 @@ enum Commands {
         keyword_phrase: String,
         #[arg(help = "the path to the model(indexed collections output) to search the term in.")]
         model_path: String,
+    },
+    #[command(about = "spin up a search engine server")]
+    Serve {
+        #[arg(help = "the path to the model(indexed collections output) to search the term in.")]
+        model_path: String,
+        #[arg(short, long, default_value_t = 42069)]
+        port: u16,
     },
 }
 
@@ -60,6 +68,47 @@ fn main() {
             });
 
             model.search(keyword_phrase)
+        }
+
+        Commands::Serve { model_path, port } => {
+            let model = read_model(model_path).unwrap_or_else(|err| {
+                eprintln!("ERROR: could not read model from {model_path}: {err}");
+                std::process::exit(1)
+            });
+
+            let addr = format!("127.0.0.1:{port}");
+            println!("serving at {addr}");
+
+            let server = Server::http(&addr).unwrap_or_else(|err| {
+                eprintln!("ERROR: could not start server on {addr}: {err}");
+                std::process::exit(1)
+            });
+
+            for request in server.incoming_requests() {
+                println!(
+                    "received request! method: {:#?}, url: {:#?}",
+                    request.method(),
+                    request.url(),
+                );
+
+                match request.url() {
+                    "/api/search" => {
+                        let response = Response::from_string("hello world");
+
+                        request.respond(response).unwrap_or_else(|err| {
+                            eprintln!("ERROR: could not repond to request: {err}");
+                        });
+                    }
+                    _ => {
+                        let response =
+                            Response::from_string("404").with_status_code(StatusCode(404));
+
+                        request.respond(response).unwrap_or_else(|err| {
+                            eprintln!("ERROR: could not repond to request: {err}");
+                        });
+                    }
+                }
+            }
         }
     }
 
