@@ -25,7 +25,7 @@ enum Commands {
     Search {
         #[arg(help = "the word or phrase that you’d like to rank for.")]
         keyword_phrase: String,
-        #[arg(help = "the path of the document terms frequencies index to search the term in.")]
+        #[arg(help = "the path to the model(indexed collections output) to search the term in.")]
         model_path: String,
     },
 }
