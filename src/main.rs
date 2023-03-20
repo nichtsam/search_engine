@@ -1,5 +1,8 @@
 use clap::{CommandFactory, Parser, Subcommand};
-use search_engine::{index_dir, read_index, save_index, search, DocumentTermsFrequenciesIndex};
+use search_engine::{
+    io::{read_model, write_model},
+    Model,
+};
 use std::time::SystemTime;
 
 #[derive(Parser, Debug)]
@@ -23,7 +26,7 @@ enum Commands {
         #[arg(help = "the word or phrase that you’d like to rank for.")]
         keyword_phrase: String,
         #[arg(help = "the path of the document terms frequencies index to search the term in.")]
-        dtf_index_path: String,
+        model_path: String,
     },
 }
 
@@ -37,27 +40,26 @@ fn main() {
             input_dir,
             output_path,
         } => {
-            let mut dtf_index = DocumentTermsFrequenciesIndex::new();
+            let mut model = Model::default();
 
-            if let Err(err) = index_dir(input_dir, &mut dtf_index) {
+            if let Err(err) = model.add_documents(input_dir) {
                 Cli::command().error(clap::error::ErrorKind::Io, err).exit();
             };
 
-            if let Err(err) = save_index(&dtf_index, output_path) {
+            if let Err(err) = write_model(&model, output_path) {
                 eprintln!("ERROR: could not save index to path {output_path}: {err}");
             }
         }
 
         Commands::Search {
             keyword_phrase,
-            dtf_index_path,
+            model_path,
         } => {
-            let dtf_index: DocumentTermsFrequenciesIndex = read_index(dtf_index_path)
-                .unwrap_or_else(|err| {
-                    Cli::command().error(clap::error::ErrorKind::Io, err).exit();
-                });
+            let model = read_model(model_path).unwrap_or_else(|err| {
+                Cli::command().error(clap::error::ErrorKind::Io, err).exit();
+            });
 
-            search(keyword_phrase, &dtf_index);
+            model.search(keyword_phrase)
         }
     }
 

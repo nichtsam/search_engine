@@ -4,8 +4,10 @@ use std::{
     path::Path,
 };
 
-use crate::DocumentTermsFrequenciesIndex;
+use crate::Model;
 
-pub fn read_index(path: impl AsRef<Path>) -> io::Result<DocumentTermsFrequenciesIndex> {
-    Ok(serde_json::from_reader(BufReader::new(File::open(path)?))?)
+pub fn read_model(input_path: impl AsRef<Path>) -> io::Result<Model> {
+    Ok(serde_json::from_reader(BufReader::new(File::open(
+        input_path,
+    )?))?)
 }

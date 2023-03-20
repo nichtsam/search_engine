@@ -1,5 +1,5 @@
 mod reader;
 mod writer;
 
-pub use reader::read_index;
-pub use writer::save_index;
+pub use reader::read_model;
+pub use writer::write_model;

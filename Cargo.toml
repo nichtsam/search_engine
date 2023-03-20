@@ -9,4 +9,5 @@ description = "Local search engine written in rust"
 [dependencies]
 clap = { version = "4.1.8", features = ["derive"] }
 scraper = "0.15.0"
+serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.94"
