@@ -17,6 +17,18 @@
 | `dtf_index` | Index of Document Terms Frequencies | The HashMap that stores Document Terms Frequencies with the file path as key.                                                                      |
 | `tcf`       | Term Corpus-wide Frequency          | The number of documents where a term occurs                                                                                                        |
 | `dtc`       | Document Terms Count                | The number of how many terms exist in a document                                                                                                   |
+## Modules Plan
+
+```
+src/
+├── lib/
+│   ├── io (save and read model)
+│   ├── lexer (tokenize text content)
+│   ├── extracter (extract text content from document)
+│   └── model (search engine)
+└── main/
+    └── server (single api to serve search request)
+```
 
 ## TODO
 
@@ -26,3 +38,4 @@
 - Search Result Caching.
 - Pagination.
 - Write better `serve` command.
+- Better Parser.
