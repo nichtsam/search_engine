@@ -23,3 +23,5 @@
 - Stemming.
 - Web interface.
 - Better Error handling.
+- Search Result Caching.
+- Pagination.
