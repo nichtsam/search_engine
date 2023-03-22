@@ -22,6 +22,6 @@
 
 - Stemming.
 - Web interface.
-- Better Error handling.
+- Proper Error handling with [`anyhow`](https://crates.io/crates/anyhow) and [`thiserror`](https://crates.io/crates/thiserror).
 - Search Result Caching.
 - Pagination.
