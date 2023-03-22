@@ -83,16 +83,8 @@ impl Model {
         Ok(())
     }
 
-    pub fn search(&self, keyword_phrase: &str) {
-        let result = compute_search(keyword_phrase, self);
-
-        for (index, (path, rank_score)) in result.iter().enumerate().take(10) {
-            println!(
-                "{no}. {path} => {rank_score}",
-                no = index + 1,
-                path = path.display()
-            );
-        }
+    pub fn search(&self, keyword_phrase: &str) -> Vec<(&PathBuf, f32)> {
+        compute_search(keyword_phrase, self)
     }
 }
 
