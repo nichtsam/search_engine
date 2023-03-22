@@ -25,3 +25,4 @@
 - Proper Error handling with [`anyhow`](https://crates.io/crates/anyhow) and [`thiserror`](https://crates.io/crates/thiserror).
 - Search Result Caching.
 - Pagination.
+- Write better `serve` command.
