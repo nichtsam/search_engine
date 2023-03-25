@@ -39,3 +39,4 @@ src/
 - Pagination.
 - Write better `serve` command.
 - Better Parser.
+- Try publishing to cargo and wapm.
