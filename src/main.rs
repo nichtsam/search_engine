@@ -1,9 +1,10 @@
+use anyhow::Result;
 use clap::{CommandFactory, Parser, Subcommand};
 use search_engine::{
     io::{read_model, write_model},
     Model,
 };
-use std::time::SystemTime;
+use std::{process::ExitCode, time::SystemTime};
 use tiny_http::Server;
 
 use crate::server::serve_request;
@@ -40,7 +41,14 @@ enum Commands {
     },
 }
 
-fn main() {
+fn main() -> ExitCode {
+    match run() {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(_) => ExitCode::FAILURE,
+    }
+}
+
+fn run() -> Result<()> {
     let cli = Cli::parse();
 
     let start = SystemTime::now();
@@ -52,13 +60,9 @@ fn main() {
         } => {
             let mut model = Model::default();
 
-            if let Err(err) = model.add_documents(input_dir) {
-                Cli::command().error(clap::error::ErrorKind::Io, err).exit();
-            };
+            model.add_documents(input_dir)?;
 
-            if let Err(err) = write_model(&model, output_path) {
-                eprintln!("ERROR: could not save index to path {output_path}: {err}");
-            }
+            write_model(&model, output_path)?;
         }
 
         Commands::Search {
@@ -105,6 +109,8 @@ fn main() {
     let end = SystemTime::now();
     let duration = end.duration_since(start).unwrap().as_secs_f32();
     println!("operation took {} seconds", duration);
+
+    Ok(())
 }
 
 mod server {

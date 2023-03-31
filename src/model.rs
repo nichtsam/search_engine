@@ -1,13 +1,19 @@
+use anyhow::Result;
 use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
 use std::{
     cmp::Ordering,
     collections::HashMap,
-    fs, io,
+    fs,
     path::{Path, PathBuf},
 };
 
-use crate::lexer::Lexer;
+use crate::{
+    lexer::Lexer,
+    model::indexer::{extract_text_from_html_file, index_text},
+};
+
+use self::searcher::compute_search;
 
 pub type DocumentTermsFrequencies = HashMap<String, usize>;
 
@@ -26,10 +32,8 @@ pub struct Model {
     pub tcf_table: TermCorpuswideFrequencyTable,
 }
 
-use indexer::*;
-use searcher::*;
 impl Model {
-    pub fn add_documents(&mut self, path: impl AsRef<Path>) -> io::Result<()> {
+    pub fn add_documents(&mut self, path: impl AsRef<Path>) -> Result<()> {
         let dir = fs::read_dir(path)?;
 
         'next_file: for entry in dir {
@@ -55,9 +59,9 @@ impl Model {
                 Some(extension) => match extension {
                     "html" => {
                         let text = match extract_text_from_html_file(&path) {
-                            Some(v) => v,
-                            None => {
-                                eprintln!("ERROR: could not extract text from path: {path:?}");
+                            Ok(v) => v,
+                            Err(err) => {
+                                eprintln!("ERROR: could not extract text from {path:?}: {err}");
                                 continue 'next_file;
                             }
                         };
@@ -106,27 +110,26 @@ mod indexer {
         Doc { dtf, dtc }
     }
 
-    pub fn extract_text_from_html_file(file_path: impl AsRef<Path>) -> Option<String> {
-        let content = fs::read_to_string(file_path).ok()?;
-        extract_text_from_html(&content)
+    pub fn extract_text_from_html_file(file_path: impl AsRef<Path>) -> Result<String> {
+        let content = fs::read_to_string(file_path)?;
+        Ok(extract_text_from_html(&content))
     }
 
-    pub fn extract_text_from_html(html: &str) -> Option<String> {
+    pub fn extract_text_from_html(html: &str) -> String {
         // parse the HTML
         // let html = r#"<html><title>This is The Title</title><script>this should not be included</script></html>"#;
         let document = Html::parse_document(html);
 
         // select all text nodes
         let selector =
-            Selector::parse("body :not(script):not(style), head :not(script):not(style)").ok()?;
+            Selector::parse("body :not(script):not(style), head :not(script):not(style)")
+                .expect("Corrupted selector");
 
-        Some(
-            document
-                .select(&selector)
-                .flat_map(|tag| tag.text())
-                .collect::<Vec<_>>()
-                .join(" "),
-        )
+        document
+            .select(&selector)
+            .flat_map(|tag| tag.text())
+            .collect::<Vec<_>>()
+            .join(" ")
     }
 }
 
