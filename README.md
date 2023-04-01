@@ -31,17 +31,6 @@ src/
     └── server (single api to serve search request)
 ```
 
-## TODO
-
-- Stemming.
-- Web interface.
-- Proper Error handling with [`anyhow`](https://crates.io/crates/anyhow) and [`thiserror`](https://crates.io/crates/thiserror).
-- Search Result Caching.
-- Pagination.
-- Write better `serve` command.
-- Better Parser.
-- Try publishing to crates.io and wapm.
-
 # Error handling
 
 - Propagate or Handle.
@@ -55,3 +44,15 @@ src/
 - For Developers or For Users.
 - if for Developers, use `log` crate in lib, and use a `log` implementation in executables, ex. `env-logger`.
 - if for Users, just `println!`, and `eprintln!` if it's negative information or an error.
+
+## TODO
+
+- Stemming.
+- Web interface.
+- Proper Error handling with [`anyhow`](https://crates.io/crates/anyhow) and [`thiserror`](https://crates.io/crates/thiserror).
+- Search Result Caching.
+- Pagination.
+- Write better `serve` command.
+- Better Parser.
+- Try publishing to crates.io and wapm.
+- A better system on logging and printing, Lib should probably only log.
