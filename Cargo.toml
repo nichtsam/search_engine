@@ -7,6 +7,7 @@ description = "Local search engine written in rust"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.70"
 clap = { version = "4.1.8", features = ["derive"] }
 scraper = "0.15.0"
 serde = { version = "1.0", features = ["derive"] }

@@ -1,9 +1,10 @@
-use clap::{CommandFactory, Parser, Subcommand};
+use anyhow::{anyhow, Context, Result};
+use clap::{Parser, Subcommand};
 use search_engine::{
     io::{read_model, write_model},
     Model,
 };
-use std::time::SystemTime;
+use std::{process::ExitCode, time::SystemTime};
 use tiny_http::Server;
 
 use crate::server::serve_request;
@@ -40,7 +41,17 @@ enum Commands {
     },
 }
 
-fn main() {
+fn main() -> ExitCode {
+    match run() {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(err) => {
+            eprintln!("Error: {err:?}");
+            ExitCode::FAILURE
+        }
+    }
+}
+
+fn run() -> Result<()> {
     let cli = Cli::parse();
 
     let start = SystemTime::now();
@@ -52,23 +63,18 @@ fn main() {
         } => {
             let mut model = Model::default();
 
-            if let Err(err) = model.add_documents(input_dir) {
-                Cli::command().error(clap::error::ErrorKind::Io, err).exit();
-            };
+            model
+                .add_documents(input_dir)
+                .context("Cound not add documents")?;
 
-            if let Err(err) = write_model(&model, output_path) {
-                eprintln!("ERROR: could not save index to path {output_path}: {err}");
-            }
+            write_model(&model, output_path).context("Could not write model")?;
         }
 
         Commands::Search {
             keyword_phrase,
             model_path,
         } => {
-            let model = read_model(model_path).unwrap_or_else(|err| {
-                Cli::command().error(clap::error::ErrorKind::Io, err).exit();
-            });
-
+            let model = read_model(model_path).context("Could not read model")?;
             let result = model.search(keyword_phrase);
 
             for (index, (path, rank_score)) in result.iter().enumerate().take(10) {
@@ -81,22 +87,16 @@ fn main() {
         }
 
         Commands::Serve { model_path, port } => {
-            let model = read_model(model_path).unwrap_or_else(|err| {
-                eprintln!("ERROR: could not read model from {model_path}: {err}");
-                std::process::exit(1)
-            });
-
+            let model = read_model(model_path).context("Could not read model")?;
             let addr = format!("127.0.0.1:{port}");
             println!("serving at {addr}");
 
-            let server = Server::http(&addr).unwrap_or_else(|err| {
-                eprintln!("ERROR: could not start server on {addr}: {err}");
-                std::process::exit(1)
-            });
-
+            let server = Server::http(&addr)
+                .map_err(|err| anyhow!(err))
+                .context("Could not start the server")?;
             for request in server.incoming_requests() {
                 serve_request(request, &model).unwrap_or_else(|err| {
-                    eprintln!("ERROR: could not serve request: {err}");
+                    eprintln!("Error: {err:?}");
                 });
             }
         }
@@ -105,6 +105,8 @@ fn main() {
     let end = SystemTime::now();
     let duration = end.duration_since(start).unwrap().as_secs_f32();
     println!("operation took {} seconds", duration);
+
+    Ok(())
 }
 
 mod server {
