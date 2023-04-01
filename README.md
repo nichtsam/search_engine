@@ -56,3 +56,4 @@ src/
 - Better Parser.
 - Try publishing to crates.io and wapm.
 - A better system on logging and printing, Lib should probably only log.
+- Have channel so the search engine can emits events on different stages, and let user print things like "indexing ..." by themselves.
