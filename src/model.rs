@@ -40,7 +40,7 @@ impl Model {
             let path = match entry {
                 Ok(entry) => entry.path(),
                 Err(err) => {
-                    eprintln!("ERROR: {err}");
+                    eprintln!("Error: {err}");
                     continue 'next_file;
                 }
             };
@@ -49,7 +49,7 @@ impl Model {
 
             if path.is_dir() {
                 if let Err(err) = self.add_documents(path) {
-                    eprintln!("ERROR: {err}");
+                    eprintln!("Error: {err}");
                 }
 
                 continue 'next_file;
@@ -61,7 +61,7 @@ impl Model {
                         let text = match extract_text_from_html_file(&path) {
                             Ok(v) => v,
                             Err(err) => {
-                                eprintln!("ERROR: could not extract text from {path:?}: {err}");
+                                eprintln!("Error: could not extract text from {path:?}: {err}");
                                 continue 'next_file;
                             }
                         };
@@ -73,12 +73,12 @@ impl Model {
                         self.doc_index.insert(path, doc);
                     }
                     other => {
-                        eprintln!("ERROR: extension \"{other}\" is not supported");
+                        eprintln!("Error: extension \"{other}\" is not supported");
                         continue 'next_file;
                     }
                 },
                 None => {
-                    eprintln!("ERROR: recursive indexing is not supported");
+                    eprintln!("Error: recursive indexing is not supported");
                     continue 'next_file;
                 }
             }
