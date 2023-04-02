@@ -78,7 +78,7 @@ impl Model {
                     }
                 },
                 None => {
-                    eprintln!("Error: recursive indexing is not supported");
+                    eprintln!("Error: could not detect file extension");
                     continue 'next_file;
                 }
             }
