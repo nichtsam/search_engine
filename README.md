@@ -47,7 +47,6 @@ src/
 
 ## TODO
 
-- Stemming.
 - Web interface.
 - Proper Error handling with [`anyhow`](https://crates.io/crates/anyhow) and [`thiserror`](https://crates.io/crates/thiserror).
 - Search Result Caching.
@@ -57,3 +56,4 @@ src/
 - Try publishing to crates.io and wapm.
 - A better system on logging and printing, Lib should probably only log.
 - Have channel so the search engine can emits events on different stages, and let user print things like "indexing ..." by themselves.
+- more robust stemming, currently always stemmed as english. maybe detect langauge per doc or per part of content.
