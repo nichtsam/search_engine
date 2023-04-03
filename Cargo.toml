@@ -9,6 +9,7 @@ description = "Local search engine written in rust"
 [dependencies]
 anyhow = "1.0.70"
 clap = { version = "4.1.8", features = ["derive"] }
+rust-stemmers = "1.2.0"
 scraper = "0.15.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.94"

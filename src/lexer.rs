@@ -1,3 +1,5 @@
+use rust_stemmers::Stemmer;
+
 #[derive(Debug)]
 pub struct Lexer<'a> {
     content: &'a [char],
@@ -50,9 +52,11 @@ impl<'a> Lexer<'a> {
             let token = self
                 .chop_while(|c| c.is_alphanumeric())
                 .iter()
-                .map(|c| c.to_ascii_uppercase())
-                .collect();
-            return Some(token);
+                .map(|c| c.to_ascii_lowercase())
+                .collect::<String>();
+            let stemmer = Stemmer::create(rust_stemmers::Algorithm::English);
+            let stemmed = stemmer.stem(&token).to_string();
+            return Some(stemmed);
         }
 
         // token starts with symbols
