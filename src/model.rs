@@ -9,8 +9,8 @@ use std::{
 };
 
 use crate::{
-    lexer::Lexer,
     model::indexer::{extract_text_from_html_file, index_text},
+    tokenizer::Tokenizer,
 };
 
 use self::searcher::compute_search;
@@ -101,7 +101,7 @@ mod indexer {
         let mut dtf: DocumentTermsFrequencies = HashMap::new();
         let mut dtc = 0;
 
-        for token in Lexer::new(chars) {
+        for token in Tokenizer::new(chars) {
             let count = dtf.entry(token).or_insert(0);
             *count += 1;
             dtc += 1;
@@ -140,7 +140,7 @@ mod searcher {
         let keyword_phrase = &keyword_phrase.chars().collect::<Vec<_>>();
         let mut result = Vec::new();
         for (path, doc) in model.doc_index.iter() {
-            let lexer = Lexer::new(keyword_phrase);
+            let lexer = Tokenizer::new(keyword_phrase);
             let mut rank_score = 0.0;
 
             for token in lexer {

@@ -1,11 +1,11 @@
 use rust_stemmers::Stemmer;
 
 #[derive(Debug)]
-pub struct Lexer<'a> {
+pub struct Tokenizer<'a> {
     content: &'a [char],
 }
 
-impl<'a> Lexer<'a> {
+impl<'a> Tokenizer<'a> {
     pub fn new(content: &'a [char]) -> Self {
         Self { content }
     }
@@ -65,7 +65,7 @@ impl<'a> Lexer<'a> {
     }
 }
 
-impl<'a> Iterator for Lexer<'a> {
+impl<'a> Iterator for Tokenizer<'a> {
     type Item = String;
 
     fn next(&mut self) -> Option<Self::Item> {
