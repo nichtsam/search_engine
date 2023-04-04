@@ -24,7 +24,7 @@
 src/
 ├── lib/
 │   ├── io (save and read model)
-│   ├── lexer (tokenize text content)
+│   ├── tokenizer (tokenize text content)
 │   ├── extracter (extract text content from document)
 │   └── model (search engine)
 └── main/
