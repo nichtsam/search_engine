@@ -4,8 +4,7 @@
 
 ## References
 
-- [Search Engine in Rust (Ep.01) by Tsoding Daily](https://www.youtube.com/watch?v=hm5xOJiVEeg)
-- [Rust Web Development (Search Engine Ep.02) by Tsoding Daily](https://www.youtube.com/watch?v=OYAKjlYm_Ew&t=5957s)
+- [Search Engine in Rust by Tsoding Daily](https://www.youtube.com/playlist?list=PLpM-Dvs8t0VZXC-91PpIp-eAt0WF5SKEv)
 
 ## Abbreviations and Shorthands
 
